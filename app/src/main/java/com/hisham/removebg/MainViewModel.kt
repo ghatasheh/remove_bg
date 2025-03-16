@@ -9,12 +9,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
-    private val _image = MutableStateFlow<ImageBitmap?>(null)
-    val image: StateFlow<ImageBitmap?> get() = _image
+    private val _state = MutableStateFlow(UiState())
+    val state: StateFlow<UiState> get() = _state
 
     fun removeBackground(imageBitmap: ImageBitmap) = viewModelScope.launch(Dispatchers.IO) {
 //        OnnxRemoval()
@@ -22,6 +23,13 @@ class MainViewModel : ViewModel() {
             .runInference(imageBitmap.asAndroidBitmap())
             .map { it.asImageBitmap() }
             .map { mergeImageWithMask(imageBitmap, it) }
-            .collect { _image.value = it }
+            .onStart { _state.value = UiState(showLoading = true) }
+            .collect { _state.value = UiState(image = it) }
     }
 }
+
+data class UiState(
+    val image: ImageBitmap? = null,
+    val showLoading: Boolean = false,
+    val error: Boolean = false,
+)

@@ -6,14 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
@@ -30,7 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             RemoveBgTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val image by viewModel.image.collectAsStateWithLifecycle()
+                    val state by viewModel.state.collectAsStateWithLifecycle()
                     // load image from assets
                     val imageBitmap = ImageBitmap.imageResource(id = R.drawable.bike)
 
@@ -38,11 +42,16 @@ class MainActivity : ComponentActivity() {
                         .padding(innerPadding)
                         .fillMaxSize()) {
 
-                        Image(
-                            bitmap = image ?: imageBitmap,
-                            contentDescription = null,
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                        Box(Modifier.fillMaxWidth()) {
+                            Image(
+                                bitmap = state.image ?: imageBitmap,
+                                contentDescription = null,
+                                modifier = Modifier.padding(innerPadding)
+                            )
+
+                            if (state.showLoading)
+                                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        }
 
                         Button(onClick = {
                             viewModel.removeBackground(imageBitmap)
